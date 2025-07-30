@@ -1,0 +1,142 @@
+# config.yaml
+# Mapeamento de nomes de tabela para a ordem das suas colunas.
+# Adicione ou remova tabelas e colunas aqui sem precisar editar o código Python.
+
+tab01:
+  - mesref
+  - tipo_dia
+  - fx_hora
+  - viagens
+  - tempo_percurso
+  - disp_frota
+
+tab02:
+  - data_completa
+  - hora_completa
+  - entrada_id
+  - cod_estacao
+  - bloqueio_id
+  - dbd_num
+  - grupo_bilhete
+  - forma_pagamento
+  - tipo_bilhete
+  - user_id
+  - valor
+
+tab03:
+  - Ordem
+  - Dia
+  - Viagem
+  - OrigemPrevista
+  - OrigemReal
+  - DestinoPrevisto
+  - DestinoReal
+  - HoraInicioPrevista
+  - HoraInicioReal
+  - HoraFimPrevista
+  - HoraFimReal
+  - Trem
+  - Status
+  - Stat_Desc
+  - PicoVale
+  - incidenteLeve
+  - incidenteGrave
+  - viagem_interrompida
+  - ID_ocorr
+  - ID_interrupcao
+  - ID_linha
+  - lotacao
+
+tab04:
+  - id
+  - ipo 
+  - subtipo 
+  - data 
+  - horaini 
+  - horafim 
+  - motivo 
+  - local 
+  - env_usuario 
+  - env_veiculo 
+  - bo
+
+tab05:
+  - Nome_Linha 
+  - Status_Linha 
+  - Fim_Operacao 
+  - Cod_Estacao 
+  - Grupo_Bilhete 
+  - Ini_Operacao        
+  - Num_Estacao 
+  - Max_Valor
+
+tab06:
+  - Ordem 
+  - Emissao 
+  - data 
+  - Hora 
+  - Tipo 
+  - Trem 
+  - CDV 
+  - Estacao 
+  - Via 
+  - Viagem
+  - Causa 
+  - Excluir
+  - Motivo_da_Exclusao
+
+tab07:
+  - Linha 
+  - Cod_Estacao 
+  - Estacao 
+  - Bloqueio 
+  - C_Empresa_Validador 
+  - Dbd_Num 
+  - DBD_DATA 
+  - VALID_EX_EMP 
+  - VALID_EX_NUM 
+  - VALID_EX_DATA
+
+tab08:
+  - EQUIPAMENTO 
+  - DESCRICAO 
+  - MODELO
+  - SERIE 
+  - DATA_INICIO_OPERACAO 
+  - DATA_FIM_OPERACAO
+
+tab09_1:
+  - TUE 
+  - DATA 
+  - HORA_INICIO 
+  - HORA_FIM 
+  - ORIGEM 
+  - DESTINO 
+  - DESCRICAO 
+  - STATUS
+
+tab09_2:
+  - COMPOSICAO 
+  - DATA_ABERTURA 
+  - DATA_FECHAMENTO 
+  - TIPO_MANUTENCAO 
+  - TIPO_DESC 
+  - TIPO_FALHA
+
+tab12:
+  - REFERENCIA 
+  - NUM_INSTALACAO
+  - TIPO 
+  - TOTAL_KWh 
+  - LOCAL 
+  - ENDERECO
+
+tab13:
+  - CDV 
+  - Sent_Normal_Circ 
+  - Comprimento 
+  - Cod_Velo_Max 
+  - Plat_Est 
+  - Temp_Teor_Perc 
+  - Temp_Med_Perc 
+  - TempoOcup
