@@ -143,7 +143,7 @@ class PostgreSQLDataLoader:
 class DataLoaderApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("ETL SEINFRA - METRO BH")
+        self.root.title("ETL SEINFRA - METRO BH - TRATAMENTO DE DADOS OPERACIONAIS")
         self.root.geometry("1400x820")
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -182,7 +182,7 @@ class DataLoaderApp:
             'tab02_marco': ['entrada_id', 'hora_completa', 'cod_estacao', 'bloqueio_id', 'dbd_num', 'grupo_bilhete',
                             'forma_pagamento', 'tipo_bilhete', 'user_id', 'data_completa', 'valor'],
             'tab03': ['ordem', 'dia', 'viagem', 'origemprevista', 'origemreal', 'destinoprevisto', 'destinoreal',
-                      'horainicioprevista', 'horainicioreal', 'horafimprevista', 'horafimreal', 'trem', 'status',
+                       'horainicioreal', 'horainicioprevista', 'horafimprevista', 'horafimreal',  'trem', 'status',
                       'stat_desc', 'picovale',
                       'incidenteleve', 'incidentegrave', 'viagem_interrompida', 'id_ocorr', 'id_interrupcao',
                       'id_linha', 'lotacao'],
@@ -197,8 +197,9 @@ class DataLoaderApp:
             'tab07': ['linha', 'cod_estacao', 'estacao', 'bloqueio', 'c_empresa_validador', 'dbd_num', 'dbd_data',
                       'valid_ex_emp', 'valid_ex_num', 'valid_ex_data'],
             'tab08': ['equipamento', 'descricao', 'modelo', 'serie', 'data_inicio_operacao', 'data_fim_operacao'],
-            'tab09_1': ['tue', 'data', 'hora_inicio', 'hora_fim', 'origem', 'destino', 'descricao', 'status', 'km'],
-            'tab09_2': ['composicao', 'data_abertura', 'data_fechamento', 'tipo_manutencao', 'tipo_desc', 'tipo_falha'],
+            'tab09': ['tue', 'data', 'hora_inicio', 'hora_fim', 'origem', 'destino', 'descricao', 'status', 'km'],
+            'tab14': ['composicao', 'data_abertura', 'data_fechamento', 'tipo_manutencao', 'tipo_desc', 'tipo_falha'],
+            'arq15_tueoperacoes': ['tue', 'data', 'hora_inicio', 'hora_fim', 'origem', 'destino', 'descricao'],
             'tab12': ['referencia', 'num_instalacao', 'tipo', 'total_kwh', 'local', 'endereco'],
             'tab13': ['cdv', 'sent_normal_circ', 'comprimento', 'cod_velo_max', 'plat_est', 'temp_teor_perc',
                       'temp_med_perc', 'tempoocup'],
@@ -209,8 +210,10 @@ class DataLoaderApp:
             'arq04_ocorrencias': ['id', 'tipo', 'subtipo', 'data', 'horaini', 'horafim', 'motivo', 'local',
                                   'env_usuario',
                                   'env_veiculo', 'bo'],
-            'arq05_1_reg_manutencao': ['data_abertura', 'composicao', 'data_fechamento', 'tipo_manutencao', 'tipo_desc',
-                                       'tipo_falha'],
+            'arq4_1_reclamacoesusuarios': ['tipo',  'dt', 'motivo'],
+            'arq4_2_manutencao': ['tipo', 'data', 'subtipo','hora','local'],
+            'arq4_3_seguranca': ['tipo', 'data', 'hora_inicio', 'hora_fim', 'local'],
+            'arq5_1_falhasmanutencao': ['data_abertura', 'composicao', 'data_fechamento', 'tipo_manutencao', 'tipo_de_falha'],
             'arq05_8_nece_disp': ['ordem', 'data', 'hora', 'necessidade', 'disponibilidade'],
             'arq07_linhas': ['num_estacao', 'nome_linha', 'ini_operacao', 'status_linha', 'fim_operacao', 'cod_estacao',
                              'max_valor', 'grupo_bilhete'],
@@ -218,11 +221,13 @@ class DataLoaderApp:
             'arq8_statusviagens ': ['ordem', 'dia', 'viagem', 'origem_prevista', 'origem_real', 'destino_previsto',
                                        'destino_real', 'hora_inicio_prevista', 'hora_inicio_real', 'hora_fim_prevista',
                                        'hora_fim_real', 'trem', 'status',  'pico_vale'],
+            'arq9_validacaobilhetes ': ['estacao', 'dbd_id','data_hora_corrigida','forma_pagamento','tipo_de_bilhete'],
             'arq08_03_11_15_viagens': ['ordem', 'dia', 'viagem', 'origem_previa', 'origem_real', 'destino_previo',
                                        'destino_real', 'hora_ini_prevista', 'hora_ini_real', 'hora_fim_prevista',
                                        'hora_fim_real', 'trem', 'status', 'desc_status', 'pico_vale', 'incidente_leve',
                                        'incidente_grave', 'viagem_interrompida', 'id_ocorrencia', 'id_interrupcao',
                                        'id_linha', 'lotacao'],
+            'arq11_detalhesviagens': ['data','id_viagem','hora_inicio_programada','hora_fim_programada','hora_inicio_realizada', 'status','interrupcao','lotacao_maxima','tpppm','tprpm','tpppt','tprpt','tppfp','tprfp'],
             'arq12': ['ordem', '"emissao"', 'data', 'hora', 'tipo', 'trem', 'cdv', 'estacao', 'via', 'viagem', 'causa',
                       'excluir', 'motivo'],
             'arq16_bloqueios': ['cod_estacao', 'estacao', 'bloqueio', 'dbd_id', 'data_pass', 'qtd_passageiros',
@@ -241,16 +246,16 @@ class DataLoaderApp:
                 'sql': """
                     update migracao.tab01 set tipo_dia = 'Domingos e Feriados' where tipo_dia = 'domingo e feriado';
                     update migracao.tab01 set tipo_dia = 'Sabados' where tipo_dia = 'sabado';
-                    update migracao.tab01 set tipo_dia = 'Dias Uteis' where tipo_dia = 'Dia util';
+                    update migracao.tab01 set tipo_dia = 'Dias Uteis' where tipo_dia = 'Dia util' or tipo_dia = 'Dia Util' or tipo_dia = 'dia util';
                     update migracao.tab01 set mesref = replace (mesref,'/','-');
                     update migracao.tab01 set viagens  = replace (viagens,'.0','');
                     update migracao.tab02_abril_maio set dbd_num = id from public.validador i where dbd_num = i.dbd_id;
                     update migracao.tab02_marco set dbd_num = id from public.validador i where dbd_num = i.dbd_id;
-                    update migracao.tab01 set tipo_dia = 'Dia util' where tipo_dia ='util';
-                    update migracao.tab01 set tempo_percurso  = '00:00:00' where tempo_percurso ='nan';
+                    update migracao.tab01 set tempo_percurso  = '00:00:00' where tempo_percurso ='nan' ;
                     update migracao.tab01 set disp_frota  = '0' where disp_frota  ='nan';
-                    update migracao.tab09_1 set tue = t.id from public.frota t where tue = t.cod_trem ;
-                    update migracao.tab09_2 a set composicao = t.id from public.frota t where a.composicao = t.nome_trem;   
+                    update migracao.tab09 set tue = t.id from public.frota t where tue = t.cod_trem ;
+                    update migracao.tab09 set tue = t.id from public.frota t where tue = t.cod_trem ;
+                    update migracao.tab14 a set composicao = t.id from public.frota t where a.composicao = t.cod_trem;   
                     update migracao.tab02_abril_maio set cod_estacao = 1 where cod_estacao ='ELD';
                     update migracao.tab02_abril_maio set cod_estacao = 2 where cod_estacao = 'CID'; 
                     update migracao.tab02_abril_maio set cod_estacao = 3 where cod_estacao = 'VOS';
@@ -310,24 +315,41 @@ class DataLoaderApp:
                     update migracao.tab07 set cod_estacao = 17 where cod_estacao = 'WLB';
                     update migracao.tab07 set cod_estacao = 18 where cod_estacao = 'FLO';
                     update migracao.tab07 set cod_estacao = 19 where cod_estacao = 'VRO';
+                    update migracao.tab14 set composicao = replace(composicao, 'TUE ','T');
+                    update migracao.tab14 T set composicao = ID from public.frota where T.composicao = COD_TREM;
                     update migracao.tab03 set trem = i.id from public.frota i where trem = i.cod_trem;
+                    update migracao.arq8_statusviagens  set trem  = i.id from public.frota i where trem = i.cod_trem;	                       
+	                update migracao.arq3_dadosviagens  set veiculo  = i.id from public.frota i where veiculo = i.cod_trem;
                     delete from migracao.tab03 where status = '12';
-                    update migracao.tab09_1 set tue = t.id from public.frota t where tue = t.cod_trem ;
+                    update migracao.tab09 set tue = t.id from public.frota t where tue = t.cod_trem ;
+                     update migracao.tab09 set hora_inicio = '00:00' where hora_inicio = '';
+                    update migracao.tab09 set hora_inicio = '00:00' where hora_inicio = ':';
+                    update migracao.tab09 set hora_fim  = '00:00' where hora_fim = ':';
+                    update migracao.tab09 set hora_fim  = '00:00' where hora_fim = '';
                         """,
                 'var': BooleanVar(value=False)
             },
             {
                 'nome': "Validadores ",
                 'sql': """INSERT INTO public.mov_dbd
-                                           (linha, cod_estacao, estacao, bloqueio, c_empresa_validador, dbd_num, dbd_data, valid_ex_emp, valid_ex_num, valid_ex_data)
-                                           select linha::int, cod_estacao::int, estacao, bloqueio::int, c_empresa_validador, dbd_num,TO_CHAR(TO_DATE(dbd_data , 'DD/MM/YYYY'), 'YYYY-MM-DD')::date, valid_ex_emp, valid_ex_num::int, TO_CHAR(TO_DATE(valid_ex_data , 'DD/MM/YYYY'), 'YYYY-MM-DD')::date 
-                                           from migracao.tab07 ;
-                                           insert into public.validador (dbd_id,bloqueio, validador, tipo )
-                                            select distinct dbd_num, bloqueio_id::INT ,'SEM_DADO','MOVIMENTACAO'  
-                                            from migracao.tab02_abril_maio tam where dbd_num not in (select md.dbd_id  from public.validador  md);
+                            (linha, cod_estacao, estacao, bloqueio, c_empresa_validador, dbd_num, dbd_data, valid_ex_emp, valid_ex_num, valid_ex_data)
+                        SELECT t1.linha::int,    t1.cod_estacao::int,    t1.estacao,    t1.bloqueio::int,    t1.c_empresa_validador,    t1.dbd_num,    TO_CHAR(TO_DATE(t1.dbd_data, 'DD/MM/YYYY'), 'YYYY-MM-DD')::date,
+                        t1.valid_ex_emp,    t1.valid_ex_num::int,    TO_CHAR(TO_DATE(t1.valid_ex_data, 'DD/MM/YYYY'), 'YYYY-MM-DD')::date
+                        FROM    migracao.tab07 AS t1
+                        WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM public.mov_dbd AS t2
+                        WHERE
+                        t2.linha = t1.linha::int AND
+                        t2.cod_estacao = t1.cod_estacao::int AND
+                        t2.dbd_num = t1.dbd_num);
+                        INSERT INTO public.validador (dbd_id, bloqueio, validador, tipo)
+                        SELECT DISTINCT    dbd_num,    bloqueio_id::INT,    'SEM_DADO',    'MOVIMENTACAO' 
+                        FROM    migracao.tab02_abril_maio
+                        ON CONFLICT (dbd_id) DO NOTHING;
 
-                                            update migracao.tab02_abril_maio v set dbd_num = m.id  from public.validador m where v.dbd_num = m.dbd_id;
-                                            update migracao.tab02_marco  v set dbd_num = m.id  from public.validador m where v.dbd_num = m.dbd_id;
+                        update migracao.tab02_abril_maio v set dbd_num = m.id  from public.validador m where v.dbd_num = m.dbd_id;
+                        update migracao.tab02_marco  v set dbd_num = m.id  from public.validador m where v.dbd_num = m.dbd_id;
                                            """,
                 'var': BooleanVar(value=False)
             },
@@ -336,6 +358,7 @@ class DataLoaderApp:
                 'sql': """INSERT INTO public.ARQ1_PROGPLAN(MESREF, TIPO_DIA, FX_HORA, VIAGENS, TEMPO_PRECURSO, DISP_FROTA)
                                     SELECT (MESREF || '-01')::date, TIPO_DIA, FX_HORA::TIME, VIAGENS::INT, TEMPO_PERCURSO::TIME, DISP_FROTA::INT
                                    FROM migracao.tab01 AR;
+                                   update public.arq1_progplan set tipo_dia ='Dias Uteis' where tipo_dia = 'Dia Uteis';  
                                    update public.arq1_progplan set intervalo = '00:07:00' where viagens  = 8 ;
                                    update public.arq1_progplan set intervalo = '00:03:30' where viagens  = 16;
                                    update public.arq1_progplan set intervalo = '00:03:30' where viagens  = 18;
@@ -352,6 +375,15 @@ class DataLoaderApp:
                                    update public.arq1_progplan set intervalo = '01:00:00' where viagens  = 0;
                                    update public.arq1_progplan set intervalo = '00:20:00' where viagens  = 3;
                                    update public.arq1_progplan set intervalo = '00:05:30' where viagens  = 11;
+                                   update public.arq1_progplan set intervalo = '00:10:00' where viagens  = 6;
+                                   update public.arq1_progplan set intervalo = '00:20:00' where viagens  = 3;
+                                   update public.arq1_progplan set intervalo = '00:05:30' where viagens  = 11;
+                                   update public.arq1_progplan set intervalo = '00:05:00' where viagens  = 12;
+                                   update public.arq1_progplan set intervalo = '00:03:00' where viagens  = 20;
+                                   update public.arq1_progplan set intervalo = '00:12:00' where viagens  = 5;
+                                   update public.arq1_progplan set intervalo = '01:00:00' where viagens  = 1;
+                                   update public.arq1_progplan set intervalo = '00:00:00', tempo_precurso = '00:00:00' where viagens  = 0;
+                                   update public.arq1_progplan set viagens = 0 where viagens is null ;
                                    """,
                 'var': BooleanVar(value=False)
             },
@@ -369,9 +401,9 @@ class DataLoaderApp:
             {
                 'nome': "Viagens ",
                 'sql': """
-                            insert into migracao.tab03 (ordem,dia,viagem,origemprevista,origemreal,destinoprevisto,destinoreal,horainicioprevista,horainicioreal,horafimprevista,horafimreal,trem,status,stat_desc,picovale,incidenteleve,viagem_interrompida,id_ocorr,id_interrupcao,id_linha,lotacao)
-                            select s.ordem,s.dia,s.viagem,s.origem_prevista,s.origem_real,	s.destino_previsto,s.destino_real,s.hora_inicio_prevista,s.hora_inicio_real,s.hora_fim_prevista,s.hora_fim_real,s.trem,s.status,s.status,s.pico_vale,d.incidente_leve,d.viagem_interrompida,null,null,1,0 
-	                        from	migracao.arq8_statusviagens s inner join migracao.arq3_dadosviagens d on s.ordem = d.ordem and s.dia = d.dia and s.trem = d.veiculo;
+                              insert into public.arq3_viagens (ordem, "data",viagem ,origem, destino, hora_ini, hora_fim,tipo_real,id_veiculo,incidente_leve,incidente_grave,viagem_interrompida,id_ocorrencia, id_interrupcao,id_linha,hora_ini_plan,hora_fim_plan,lotacao,tempo_prog,tempo_real,mtrp,dia_semana,atraso,intervalo)
+                              select s.ordem::int ,s.dia::date,s.viagem::int,s.origem_prevista,s.destino_real , s.hora_inicio_real::time, s.hora_fim_real::time ,d.tipo_real::int , s.trem::int, case when d.incidente_leve = 'SIM' then true else false end as incleve , case when d.incidente_grave = 'SIM' then true else false end as incgrave , d.viagem_interrompida, null, null, 1, s.hora_inicio_prevista::time , s.hora_fim_prevista::time , null, null, null,null,null,null,null 
+                              from	migracao.arq8_statusviagens s inner join migracao.arq3_dadosviagens d on s.viagem = d.viagem  and s.dia = d.dia and s.trem = d.veiculo;
                             insert into public.arq3_viagens (ordem,"data",viagem,origem,destino,hora_ini,hora_fim,tipo_real,id_veiculo,incidente_leve,incidente_grave,viagem_interrompida,id_ocorrencia,id_interrupcao,id_linha,hora_ini_plan,hora_fim_plan )      
                             select ordem::int,dia::date,   viagem::int,   origemprevista ,   destinoprevisto ,  horainicioreal::time  ,    horafimreal::time ,    status::int,   trem::int, case when incidenteleve = '' then false    when incidenteleve is null then false  when incidenteleve = 'nao' then false else true    end as inc_leve,   case when incidentegrave = '' then false when incidentegrave is null then false when incidentegrave = 'nao' then false else true  end as inc_grave,  stat_desc ,    id_ocorr::int, id_interrupcao::int,   id_linha::int, t.horainicioprevista::time,    t.horafimprevista::time from migracao.tab03 t;
                             update public.arq3_viagens set viagem_interrompida = 'Sem Interrupcao' where viagem_interrompida = 'Executada';
@@ -380,8 +412,8 @@ class DataLoaderApp:
                             delete from public.arq3_viagens where viagem_interrompida in ('Injecao','Recolhimento');
                             update public.arq3_viagens set tempo_prog = hora_fim_plan - hora_ini_plan;
                             update public.arq3_viagens set tempo_real = hora_fim - hora_ini ;
-                            update public.arq3_viagens set mtrp = EXTRACT(EPOCH FROM  tempo_real ) / EXTRACT(EPOCH FROM  tempo_prog );
                             update public.arq3_viagens set dia_semana = c.dia_semana from public.calendario c where "data" = c.data_calendario ;
+                            update public.arq3_viagens set mtrp = EXTRACT(EPOCH FROM  tempo_real ) / EXTRACT(EPOCH FROM  tempo_prog );
                             update public.arq3_viagens set dia_semana = 99 where "data" in (select  f.data_feriado from public.feriados f );
                             update public.arq3_viagens v set intervalo = p.intervalo  from public.arq1_progplan p where v.dia_semana in (1,2,3,4,5) and extract(hour  from  p.fx_hora) = extract (hour from v.hora_ini) and extract(month from p.mesref) = extract(month from  v."data") and extract(year from v."data") = extract(year from p.mesref) and p.tipo_dia = 'Dias Uteis';
                             update public.arq3_viagens v set intervalo = p.intervalo  from public.arq1_progplan p where v.dia_semana in (0,99) and extract(hour  from  p.fx_hora) = extract (hour from v.hora_ini) and extract(month from p.mesref) = extract(month from  v."data") and extract(year from v."data") = extract(year from p.mesref) and p.tipo_dia = 'Domingos e Feriados';
@@ -395,6 +427,7 @@ class DataLoaderApp:
                             update public.arq3_viagens  set atraso = 2.0 where incidente_leve is true ;
                             update public.arq3_viagens set atraso = 4.0 where incidente_grave is true ;
                             """,
+                ###update public.arq3_viagens set mtrp = EXTRACT(EPOCH FROM  tempo_real ) / EXTRACT(EPOCH FROM  tempo_prog );
                 'var': BooleanVar(value=False)
             },
             {
@@ -408,21 +441,62 @@ class DataLoaderApp:
             {
                 'nome': "Ocorrências",
                 'sql': """insert into public.arq4_ocorrencias (tipo,subtipo,"data",hora_ini,hora_fim,motivo,"local",bo,id_veiculo,id_dispositivo)
-                        select tipo::varchar(20),subtipo::varchar(20),"data"::date,horaini::time,horafim::time,motivo,"local",bo,null,null from migracao.tab04 ;""",
+                        select tipo::varchar(20),subtipo::varchar(20),TO_DATE("data", 'DD/MM/YYYY')::date,horaini::time,horafim::time,motivo,"local",bo,null,null from migracao.tab04 ON CONFLICT (tipo,subtipo,"data",hora_ini,hora_fim,motivo,"local") DO NOTHING;
+                        insert into public.arq4_ocorrencias (tipo,subtipo , "data", motivo, hora_ini,hora_fim)
+                        select tipo,'RECLAMAÇÃO', dt::date, motivo ,'08:00:00','08:00:00' from migracao.arq4_1_reclamacoesusuarios ao ;""",
                 'var': BooleanVar(value=False)
             },
 
             {
                 'nome': "Manutenção",
-                'sql': """INSERT INTO public.registros_manutencao (tipo, data, subtipo, hora, local)
-                                 SELECT tipo, data, subtipo, hora, local 
-                                 FROM migracao.arq4_2_manutencao""",
-                'var': BooleanVar(value=False)
+                'sql': """INSERT INTO public.registros_manutencao (falha, id_tue, data_abertura, data_fechamento, hora_inicio, hora_fim, origem, destino, km, "local", tipo_manutencao ) 
+                        select distinct  mn.tipo_falha,    op.tue::int,    op."data"::date,    data_fechamento::date ,    op.hora_inicio::time,    op.hora_fim::time,      op.origem ,
+                         op.destino , op.km,op.status, mn.tipo_desc 
+                        FROM   migracao.tab09 AS op inner  JOIN    migracao.tab14 AS mn ON    op.tue = mn.composicao AND
+                        TO_DATE(op."data" , 'DD/MM/YYYY') = TO_DATE(mn.data_abertura, 'DD/MM/YYYY') and OP.status IN( 'MANUT')   group by mn.tipo_falha,
+                        op.tue,    op."data",    op.hora_inicio,    op.hora_fim ,    mn.data_fechamento,    op.origem ,    op.destino ,    op.km,    op.status,    mn.tipo_desc;
+                        update public.registros_manutencao set tempo_indisponivel = hora_fim - hora_inicio  ;""",
+                    'var': BooleanVar(value=False)
             },
             {
                 'nome': "Energia",
                 'sql': """insert into public.energia (mes_ref, tipo,consumo ,"local" ,num_instalacao  )
                 select (referencia || '/01')::date, tipo , total_kwh::numeric,"local" , num_instalacao::numeric  from migracao.tab12;""",
+                'var': BooleanVar(value=False)
+            },
+            {
+                'nome': "Disponibilidade Frota",
+                'sql': """insert into public.disponibilidade_tue (id_tue, "data", hora_inicio,hora_fim,destino,descricao,status,km)
+                select tue::INT, "data"::date, hora_inicio::time,hora_fim::time,destino,descricao,status,kM::int from migracao.tab09 where status != 'MANUT';
+                update public.disponibilidade_tue set horas_disp = hora_fim - hora_inicio;
+                insert into horas_disponivel (id_tue, mes,horas_disponivel,horas_operacao)
+                with operacao as (
+                select sum(horas_disp) horas_ope , id_tue,  date_trunc('month',"data")::date mes    from public.disponibilidade_tue dt where status = 'OPE' group by id_tue, mes
+                ), disponibilidade as (
+                select sum(horas_disp) horas_disp , id_tue,  date_trunc('month',"data")::date mes  from public.disponibilidade_tue dt where status = 'DISP' group by id_tue  , mes )
+                select o.id_tue, o.mes, d.horas_disp, o.horas_ope  from operacao o inner join disponibilidade d on o.id_tue = d.id_tue;""",
+                'var': BooleanVar(value=False)
+            },
+            {
+                'nome': "KM_Percorrida",
+                'sql': """insert into public.km_percorrida(id_tue, km_inicial, km_final,km_percorrida, mes)
+                select tue::int , min (km) as km_inicial, max(km) as km_final,  max (km)- min(km)   as km_percorrido, min("data")::date as "mes" from migracao.tab09 where  status != 'MANUT' group by tue order by tue;
+                update public.km_percorrida set mes = DATE_TRUNC('month', mes)::date;""",
+
+                'var': BooleanVar(value=False)
+            },
+            {
+                'nome': "Indisponibilidade - TUE",
+                'sql': """insert into public.indisponibilidade_tue(id_tue,horas_indisp,mes)
+                    select distinct id_tue, sum(tempo_indisponivel), DATE_TRUNC('month',data_abertura)::date as data_manut  from public.registros_manutencao   group by id_tue,   data_manut;""",
+
+                'var': BooleanVar(value=False)
+            },
+            {
+                'nome': "Frota Status",
+                'sql': """insert into public.frota_status (id_trem, mes_ref, prod_km,horas_disponivel, horas_operacao, horas_manutencao)
+                select hd.id_tue, hd.mes, kp.km_percorrida  , hd.horas_disponiveis, hd.horas_operacao, it.horas_indisp  from public.horas_disponiveis hd  inner join public.indisponibilidade_tue it on hd.id_tue = it.id_tue inner join public.km_percorrida kp on it.id_tue = kp.id_tue ;""",
+
                 'var': BooleanVar(value=False)
             },
             {
@@ -438,10 +512,30 @@ class DataLoaderApp:
                                     delete from migracao.tab06;
                                     delete from migracao.tab07;
                                     delete from migracao.tab08;
-                                    delete from migracao.tab09_1;
-                                    delete from migracao.tab09_2;
+                                    delete from migracao.tab09;
+                                    delete from migracao.tab14;
                                     delete from migracao.tab12;
-                                    delete from migracao.tab13;""",
+                                    delete from migracao.tab13;
+                                    delete from migracao.arq11_detalhesviagens;
+                                    delete from migracao.arq12_excecoesviagens ;
+                                    delete from migracao.arq13_1_incidentes ;
+                                    delete from migracao.arq13_2_ocorrenciasseguranca ;
+                                    delete from migracao.arq15_tueoperacoes ;
+                                    delete from migracao.arq16_contagempassageiros;
+                                    delete from migracao.arq17_bloqueios ;
+                                    delete from migracao.arq18_equipamentos ;
+                                    delete from migracao.arq1_resumoviagensfrota ;
+                                    delete from migracao.arq2_dadosbilhetagem ;
+                                    delete from migracao.arq3_dadosviagens ;
+                                    delete from migracao.arq4_1_reclamacoesusuarios ;
+                                    delete from migracao.arq4_2_manutencao ;
+                                    delete from migracao.arq4_3_seguranca ;
+                                    delete from migracao.arq5_1_falhasmanutencao ;
+                                    delete from migracao.arq5_6_dadosfrota ;
+                                    delete from migracao.arq5_8_necessidadedisponibilidade ;
+                                    delete from migracao.arq7_estacoes ;
+                                    delete from migracao.arq8_statusviagens ;
+                                    delete from migracao.arq9_validacaobilhetes ;""",
                 'var': BooleanVar(value=False)
             }
         ]
