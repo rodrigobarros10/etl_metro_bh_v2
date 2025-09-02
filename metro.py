@@ -357,7 +357,8 @@ class DataLoaderApp:
                 'nome': "Quadro de Viagens",
                 'sql': """INSERT INTO public.ARQ1_PROGPLAN(MESREF, TIPO_DIA, FX_HORA, VIAGENS, TEMPO_PRECURSO, DISP_FROTA)
                                     SELECT (MESREF || '-01')::date, TIPO_DIA, FX_HORA::TIME, VIAGENS::INT, TEMPO_PERCURSO::TIME, DISP_FROTA::INT
-                                   FROM migracao.tab01 AR;
+                                   FROM migracao.tab01 AR
+                                   ON CONFLICT (MESREF, TIPO_DIA, FX_HORA, VIAGENS,DISP_FROTA) DO NOTHING;
                                    update public.arq1_progplan set tipo_dia ='Dias Uteis' where tipo_dia = 'Dia Uteis';  
                                    update public.arq1_progplan set intervalo = '00:07:00' where viagens  = 8 ;
                                    update public.arq1_progplan set intervalo = '00:03:30' where viagens  = 16;
@@ -391,10 +392,12 @@ class DataLoaderApp:
                 'nome': "Bilhetagem ",
                 'sql': """insert into public.arq2_bilhetagem (DATA_HORA,ID_ESTACAO,ID_BLOQUEIO,GRUPO_BILHETAGEM,FORMA_PGTO,TIPO_BILHETAGEM,id_validador,VALOR,USUARIO)
                             select CONCAT(ab.data_completa, ' ', ab.hora_completa)::timestamp, ab.cod_estacao ::INT,ab.bloqueio_id::INT,ab.grupo_bilhete ,ab.forma_pagamento ,ab.tipo_bilhete,null,ab.valor ::numeric(3,2),ab.user_id 
-                            from migracao.tab02_abril_maio ab ;
+                            from migracao.tab02_abril_maio ab 
+                            ON CONFLICT (DATA_HORA,ID_ESTACAO,ID_BLOQUEIO,GRUPO_BILHETAGEM,FORMA_PGTO,TIPO_BILHETAGEM) DO NOTHING;
                             insert into public.arq2_bilhetagem (DATA_HORA,ID_ESTACAO,ID_BLOQUEIO,GRUPO_BILHETAGEM,FORMA_PGTO,TIPO_BILHETAGEM,id_validador,VALOR,USUARIO)
                             select CONCAT(ab.data_completa, ' ', ab.hora_completa)::timestamp,ab.cod_estacao ::INT,ab.bloqueio_id::INT,ab.grupo_bilhete ,ab.forma_pagamento ,ab.tipo_bilhete,null,ab.valor ::numeric(3,2),ab.user_id 
-                            from migracao.tab02_marco ab;                            
+                            from migracao.tab02_marco ab 
+                            ON CONFLICT (DATA_HORA,ID_ESTACAO,ID_BLOQUEIO,GRUPO_BILHETAGEM,FORMA_PGTO,TIPO_BILHETAGEM) DO NOTHING;                            
                     """,
                 'var': BooleanVar(value=False)
             },
@@ -403,9 +406,11 @@ class DataLoaderApp:
                 'sql': """
                               insert into public.arq3_viagens (ordem, "data",viagem ,origem, destino, hora_ini, hora_fim,tipo_real,id_veiculo,incidente_leve,incidente_grave,viagem_interrompida,id_ocorrencia, id_interrupcao,id_linha,hora_ini_plan,hora_fim_plan,lotacao,tempo_prog,tempo_real,mtrp,dia_semana,atraso,intervalo)
                               select s.ordem::int ,s.dia::date,s.viagem::int,s.origem_prevista,s.destino_real , s.hora_inicio_real::time, s.hora_fim_real::time ,d.tipo_real::int , s.trem::int, case when d.incidente_leve = 'SIM' then true else false end as incleve , case when d.incidente_grave = 'SIM' then true else false end as incgrave , d.viagem_interrompida, null, null, 1, s.hora_inicio_prevista::time , s.hora_fim_prevista::time , null, null, null,null,null,null,null 
-                              from	migracao.arq8_statusviagens s inner join migracao.arq3_dadosviagens d on s.viagem = d.viagem  and s.dia = d.dia and s.trem = d.veiculo;
+                              from	migracao.arq8_statusviagens s inner join migracao.arq3_dadosviagens d on s.viagem = d.viagem  and s.dia = d.dia and s.trem = d.veiculo
+                              ON CONFLICT (ordem,data,viagem,origem,destino,hora_ini,hora_fim) DO NOTHING;
                             insert into public.arq3_viagens (ordem,"data",viagem,origem,destino,hora_ini,hora_fim,tipo_real,id_veiculo,incidente_leve,incidente_grave,viagem_interrompida,id_ocorrencia,id_interrupcao,id_linha,hora_ini_plan,hora_fim_plan )      
-                            select ordem::int,dia::date,   viagem::int,   origemprevista ,   destinoprevisto ,  horainicioreal::time  ,    horafimreal::time ,    status::int,   trem::int, case when incidenteleve = '' then false    when incidenteleve is null then false  when incidenteleve = 'nao' then false else true    end as inc_leve,   case when incidentegrave = '' then false when incidentegrave is null then false when incidentegrave = 'nao' then false else true  end as inc_grave,  stat_desc ,    id_ocorr::int, id_interrupcao::int,   id_linha::int, t.horainicioprevista::time,    t.horafimprevista::time from migracao.tab03 t;
+                            select ordem::int,dia::date,   viagem::int,   origemprevista ,   destinoprevisto ,  horainicioreal::time  ,    horafimreal::time ,    status::int,   trem::int, case when incidenteleve = '' then false    when incidenteleve is null then false  when incidenteleve = 'nao' then false else true    end as inc_leve,   case when incidentegrave = '' then false when incidentegrave is null then false when incidentegrave = 'nao' then false else true  end as inc_grave,  stat_desc ,    id_ocorr::int, id_interrupcao::int,   id_linha::int, t.horainicioprevista::time,    t.horafimprevista::time from migracao.tab03 t
+                            ON CONFLICT (ordem,data,viagem,origem,destino,hora_ini,hora_fim) DO NOTHING;;
                             update public.arq3_viagens set viagem_interrompida = 'Sem Interrupcao' where viagem_interrompida = 'Executada';
                             update public.arq3_viagens set viagem_interrompida = 'Cancelada Totalmente' where viagem_interrompida = 'Cancelada';
                             update public.arq3_viagens set viagem_interrompida = 'Cancelada Parcial' where viagem_interrompida = 'Interrompida';
@@ -443,7 +448,8 @@ class DataLoaderApp:
                 'sql': """insert into public.arq4_ocorrencias (tipo,subtipo,"data",hora_ini,hora_fim,motivo,"local",bo,id_veiculo,id_dispositivo)
                         select tipo::varchar(20),subtipo::varchar(20),TO_DATE("data", 'DD/MM/YYYY')::date,horaini::time,horafim::time,motivo,"local",bo,null,null from migracao.tab04 ON CONFLICT (tipo,subtipo,"data",hora_ini,hora_fim,motivo,"local") DO NOTHING;
                         insert into public.arq4_ocorrencias (tipo,subtipo , "data", motivo, hora_ini,hora_fim)
-                        select tipo,'RECLAMAÇÃO', dt::date, motivo ,'08:00:00','08:00:00' from migracao.arq4_1_reclamacoesusuarios ao ;""",
+                        select tipo,'RECLAMAÇÃO', dt::date, motivo ,'08:00:00','08:00:00' from migracao.arq4_1_reclamacoesusuarios ao
+                         ON CONFLICT (tipo,subtipo,"data",hora_ini,hora_fim,motivo,"local") DO NOTHING;""",
                 'var': BooleanVar(value=False)
             },
 
@@ -461,7 +467,8 @@ class DataLoaderApp:
             {
                 'nome': "Energia",
                 'sql': """insert into public.energia (mes_ref, tipo,consumo ,"local" ,num_instalacao  )
-                select (referencia || '/01')::date, tipo , total_kwh::numeric,"local" , num_instalacao::numeric  from migracao.tab12;""",
+                select (referencia || '/01')::date, tipo , total_kwh::numeric,"local" , num_instalacao::numeric  from migracao.tab12
+                ON CONFLICT (mes_ref,tipo,consumo,local,num_instalacao) DO NOTHING;""",
                 'var': BooleanVar(value=False)
             },
             {
@@ -469,18 +476,22 @@ class DataLoaderApp:
                 'sql': """insert into public.disponibilidade_tue (id_tue, "data", hora_inicio,hora_fim,destino,descricao,status,km)
                 select tue::INT, "data"::date, hora_inicio::time,hora_fim::time,destino,descricao,status,kM::int from migracao.tab09 where status != 'MANUT';
                 update public.disponibilidade_tue set horas_disp = hora_fim - hora_inicio;
-                insert into horas_disponivel (id_tue, mes,horas_disponivel,horas_operacao)
-                with operacao as (
-                select sum(horas_disp) horas_ope , id_tue,  date_trunc('month',"data")::date mes    from public.disponibilidade_tue dt where status = 'OPE' group by id_tue, mes
-                ), disponibilidade as (
-                select sum(horas_disp) horas_disp , id_tue,  date_trunc('month',"data")::date mes  from public.disponibilidade_tue dt where status = 'DISP' group by id_tue  , mes )
-                select o.id_tue, o.mes, d.horas_disp, o.horas_ope  from operacao o inner join disponibilidade d on o.id_tue = d.id_tue;""",
+                insert into public.horas_disponiveis (id_tue, mes,horas_disponiveis,horas_operacao)
+                 with operacao as (                select                 sum(horas_disp) horas_ope ,              id_tue,                  date_trunc('month',"data")::date mes   
+                from public.disponibilidade_tue dt                where status = 'OPE' group by id_tue, mes                ), disponibilidade as (
+                select                 sum(horas_disp) horas_disp ,                id_tue,                  date_trunc('month',"data")::date mes  
+                from public.disponibilidade_tue dt                 where status = 'DISP'                 group by id_tue  , mes )
+                select                 o.id_tue,                 o.mes,                 d.horas_disp,                 o.horas_ope  
+                from operacao o 
+                inner join disponibilidade d on o.id_tue = d.id_tue and o.mes = d.mes
+                ON CONFLICT (id_tue, mes, horas_disponiveis) DO NOTHING;""",
                 'var': BooleanVar(value=False)
             },
             {
                 'nome': "KM_Percorrida",
                 'sql': """insert into public.km_percorrida(id_tue, km_inicial, km_final,km_percorrida, mes)
-                select tue::int , min (km) as km_inicial, max(km) as km_final,  max (km)- min(km)   as km_percorrido, min("data")::date as "mes" from migracao.tab09 where  status != 'MANUT' group by tue order by tue;
+                select tue::int , min (km) as km_inicial, max(km) as km_final,  max (km)- min(km)   as km_percorrido, min("data")::date as "mes" from migracao.tab09 where  status != 'MANUT' group by tue order by tue
+                ON CONFLICT (id_tue,km_inicial,km_final,mes) DO NOTHING;
                 update public.km_percorrida set mes = DATE_TRUNC('month', mes)::date;""",
 
                 'var': BooleanVar(value=False)
@@ -488,14 +499,24 @@ class DataLoaderApp:
             {
                 'nome': "Indisponibilidade - TUE",
                 'sql': """insert into public.indisponibilidade_tue(id_tue,horas_indisp,mes)
-                    select distinct id_tue, sum(tempo_indisponivel), DATE_TRUNC('month',data_abertura)::date as data_manut  from public.registros_manutencao   group by id_tue,   data_manut;""",
+                    select distinct id_tue, sum(tempo_indisponivel), DATE_TRUNC('month',data_abertura)::date as data_manut  from public.registros_manutencao   group by id_tue,   data_manut
+                    ON CONFLICT (id_tue,mes,tipo_manut,horas_indisp) DO NOTHING;""",
 
                 'var': BooleanVar(value=False)
             },
             {
                 'nome': "Frota Status",
                 'sql': """insert into public.frota_status (id_trem, mes_ref, prod_km,horas_disponivel, horas_operacao, horas_manutencao)
-                select hd.id_tue, hd.mes, kp.km_percorrida  , hd.horas_disponiveis, hd.horas_operacao, it.horas_indisp  from public.horas_disponiveis hd  inner join public.indisponibilidade_tue it on hd.id_tue = it.id_tue inner join public.km_percorrida kp on it.id_tue = kp.id_tue ;""",
+                select hd.id_tue, hd.mes, kp.km_percorrida  , hd.horas_disponiveis, hd.horas_operacao, it.horas_indisp  
+                from public.horas_disponiveis hd  
+                inner join public.indisponibilidade_tue it on hd.id_tue = it.id_tue and hd.mes = it.mes 
+                inner join public.km_percorrida kp on it.id_tue = kp.id_tue and it.mes = kp.mes
+                ON CONFLICT (id_trem,mes_ref,prod_km,horas_operacao,horas_disponivel,horas_manutencao) DO NOTHING;
+                with falhas as (
+                select count(*) qtd, DATE_TRUNC('month', rm.data_abertura)::date AS  MES,  id_tue from registros_manutencao rm where tipo_manutencao like 'CORRETIVA' group by id_tue, mes
+                )
+                update frota_status fr set falhas = f.qtd from falhas f where fr.id_trem = f.id_tue and fr.mes_ref = f.me;
+                update frota_status set falhas = 0 where falhas is null ;""",
 
                 'var': BooleanVar(value=False)
             },
